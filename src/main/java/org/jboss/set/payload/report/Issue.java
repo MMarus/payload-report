@@ -21,11 +21,49 @@
  */
 package org.jboss.set.payload.report;
 
+import org.jboss.set.aphrodite.issue.trackers.jira.JiraIssue;
+
+import java.net.MalformedURLException;
+import java.net.URL;
+
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public interface Issue {
-    String getReport();
+public class Issue extends JiraIssue {
+    private static final URL DUMMY_URL;
 
-    Signal getSignal();
+    static {
+        try {
+            DUMMY_URL = new URL("file://dummy");
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // take this over from super
+    private URL url;
+
+    public Issue() {
+        super(DUMMY_URL);
+    }
+
+//    public Issue(final URL url) {
+//        super(url);
+//    }
+
+    public String getReport() {
+        throw new RuntimeException("NYI: org.jboss.set.payload.report.Issue.getReport");
+    }
+
+    public URL getURL() {
+        return url;
+    }
+
+    public Signal getSignal() {
+        throw new RuntimeException("NYI: org.jboss.set.payload.report.Issue.getSignal");
+    }
+
+    public void setURL(final URL url) {
+        this.url = url;
+    }
 }

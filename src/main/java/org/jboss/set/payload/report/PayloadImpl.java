@@ -22,6 +22,7 @@
 package org.jboss.set.payload.report;
 
 import com.atlassian.jira.rest.client.api.domain.Version;
+import org.jboss.set.payload.report.container.Container;
 
 import java.util.Collection;
 

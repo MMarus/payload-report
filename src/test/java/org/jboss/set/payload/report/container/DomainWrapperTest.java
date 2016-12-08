@@ -19,30 +19,29 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.set.payload.report;
+package org.jboss.set.payload.report.container;
 
-import com.atlassian.jira.rest.client.api.JiraRestClient;
-import com.atlassian.jira.rest.client.api.domain.Version;
-import org.jboss.set.payload.report.container.Container;
-
-import java.util.stream.StreamSupport;
+import org.jboss.invocation.Interceptor;
+import org.jboss.invocation.InterceptorInvocationHandler;
+import org.jboss.invocation.Interceptors;
+import org.jboss.invocation.proxy.ProxyConfiguration;
+import org.jboss.invocation.proxy.ProxyFactory;
+import org.jboss.set.aphrodite.domain.Issue;
+import org.junit.Test;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class PayloadHomeImpl implements PayloadHome {
-    private final JiraRestClient jiraRestClient = Container.getJiraRestClient();
-
-    @Override
-    public Payload findByPrimaryKey(final String arg) throws ObjectNotFoundException {
-        // TODO: cache
-        // TODO: match with pattern
-        final String sprint = "EAP " + arg.substring(0, arg.length() - 3); // strip .GA
-        final Version version = StreamSupport.stream(jiraRestClient.getProjectClient().getProject("JBEAP").claim().getVersions().spliterator(), false)
-                .filter(v -> v.getName().equals(arg))
-                .findFirst()
-                .orElseThrow(() -> new ObjectNotFoundException(arg));
-        //System.out.println("version = " + version);
-        return new PayloadImpl(version, sprint);
+public class DomainWrapperTest {
+    @Test
+    public void test1() throws Exception {
+        final ProxyConfiguration<DummyIssue> proxyConfiguration = new ProxyConfiguration<DummyIssue>()
+                .setClassLoader(DomainWrapperTest.class.getClassLoader())
+                .setProxyName(Issue.class.getPackage(), "Issue$Proxy")
+                .setSuperClass(DummyIssue.class);
+        final ProxyFactory<DummyIssue> proxyFactory = new ProxyFactory<>(proxyConfiguration);
+        final Interceptor interceptor = Interceptors.getChainedInterceptor(new DummyInterceptor());
+        final Issue issue = proxyFactory.newInstance(new InterceptorInvocationHandler(interceptor));
+        System.out.println(issue);
     }
 }

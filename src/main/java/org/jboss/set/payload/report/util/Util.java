@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.set.payload.report;
+package org.jboss.set.payload.report.util;
 
 import java.lang.reflect.Field;
 import java.util.function.Consumer;
@@ -28,7 +28,7 @@ import java.util.function.Supplier;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-class Util {
+public class Util {
     @FunctionalInterface
     public interface SupplierWithException<T> {
 
@@ -40,13 +40,13 @@ class Util {
         T get() throws Exception;
     }
 
-    static <T> T fetch(final Object source, final String fieldName, final Class<T> resultClass) throws NoSuchFieldException {
+    public static <T> T fetch(final Object source, final String fieldName, final Class<T> resultClass) throws NoSuchFieldException {
         final Field field = source.getClass().getDeclaredField(fieldName);
         field.setAccessible(true);
         return resultClass.cast(unchecked(() -> field.get(source)));
     }
 
-    static <T> T unchecked(final SupplierWithException<T> supplier) {
+    public static <T> T unchecked(final SupplierWithException<T> supplier) {
         try {
             return supplier.get();
         } catch (final Exception e) {

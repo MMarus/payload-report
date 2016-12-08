@@ -21,7 +21,7 @@
  */
 package org.jboss.set.payload.report;
 
-import org.jboss.set.aphrodite.spi.AphroditeException;
+import org.jboss.set.payload.report.container.Container;
 
 import java.util.Collection;
 
@@ -35,7 +35,8 @@ public class Main {
         final Payload payload = payloadHome.findByPrimaryKey(args[0]);
         final Collection<Issue> issues = payload.getIssues();
         issues.forEach((issue) -> {
-            System.out.println(issue.getSignal() + " " + issue.getReport());
+            //System.out.println(issue.getSignal() + " " + issue.getReport());
+            System.out.println(issue);
         });
         System.exit(0);
     }

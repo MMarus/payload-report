@@ -19,30 +19,31 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.set.payload.report;
+package org.jboss.set.payload.report.container;
 
-import com.atlassian.jira.rest.client.api.JiraRestClient;
-import com.atlassian.jira.rest.client.api.domain.Version;
-import org.jboss.set.payload.report.container.Container;
+import org.jboss.set.aphrodite.domain.Issue;
+import org.jboss.set.aphrodite.domain.TrackerType;
 
-import java.util.stream.StreamSupport;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
+ * To ensure we have an empty constructor.
+ *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class PayloadHomeImpl implements PayloadHome {
-    private final JiraRestClient jiraRestClient = Container.getJiraRestClient();
+public class DummyIssue extends Issue {
+    private static final URL DUMMY_URL;
 
-    @Override
-    public Payload findByPrimaryKey(final String arg) throws ObjectNotFoundException {
-        // TODO: cache
-        // TODO: match with pattern
-        final String sprint = "EAP " + arg.substring(0, arg.length() - 3); // strip .GA
-        final Version version = StreamSupport.stream(jiraRestClient.getProjectClient().getProject("JBEAP").claim().getVersions().spliterator(), false)
-                .filter(v -> v.getName().equals(arg))
-                .findFirst()
-                .orElseThrow(() -> new ObjectNotFoundException(arg));
-        //System.out.println("version = " + version);
-        return new PayloadImpl(version, sprint);
+    static {
+        try {
+            DUMMY_URL = new URL("file://dummy");
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public DummyIssue() {
+        super(DUMMY_URL, null);
     }
 }

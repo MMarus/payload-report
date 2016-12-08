@@ -19,30 +19,43 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.set.payload.report;
+package org.jboss.set.payload.report.container;
 
-import com.atlassian.jira.rest.client.api.JiraRestClient;
-import com.atlassian.jira.rest.client.api.domain.Version;
-import org.jboss.set.payload.report.container.Container;
+import org.junit.Test;
 
-import java.util.stream.StreamSupport;
+import java.lang.ref.SoftReference;
+import java.lang.ref.WeakReference;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class PayloadHomeImpl implements PayloadHome {
-    private final JiraRestClient jiraRestClient = Container.getJiraRestClient();
+public class CacheTestCase {
+    @Test
+    public void test1() {
+        final Cache<String, Object> cache = new Cache<>();
+        final String key = "key";
+        Object value = new Object();
+        cache.put(key, value);
+        assertNotNull(cache.get(key));
+    }
 
-    @Override
-    public Payload findByPrimaryKey(final String arg) throws ObjectNotFoundException {
-        // TODO: cache
-        // TODO: match with pattern
-        final String sprint = "EAP " + arg.substring(0, arg.length() - 3); // strip .GA
-        final Version version = StreamSupport.stream(jiraRestClient.getProjectClient().getProject("JBEAP").claim().getVersions().spliterator(), false)
-                .filter(v -> v.getName().equals(arg))
-                .findFirst()
-                .orElseThrow(() -> new ObjectNotFoundException(arg));
-        //System.out.println("version = " + version);
-        return new PayloadImpl(version, sprint);
+    @Test
+    public void test2() {
+        final Cache<String, Object> cache = new Cache<>();
+        final String key = "key";
+        Object value = new Object();
+        cache.put(key, value);
+        assertNotNull(cache.get(key));
+        value = null;
+        // this is JDK specific
+        System.gc();
+        assertNull(cache.get(key));
     }
 }

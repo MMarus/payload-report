@@ -19,7 +19,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.set.payload.report;
+package org.jboss.set.payload.report.container;
 
 import com.atlassian.jira.rest.client.api.JiraRestClient;
 import org.jboss.set.aphrodite.Aphrodite;
@@ -28,13 +28,15 @@ import org.jboss.set.aphrodite.issue.trackers.jira.JiraIssueTracker;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.jboss.set.payload.report.Util.fetch;
-import static org.jboss.set.payload.report.Util.unchecked;
+import static org.jboss.set.payload.report.util.Util.fetch;
+import static org.jboss.set.payload.report.util.Util.unchecked;
 
 /**
+ * A simple container that contains simplistic services.
+ *
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-class Container {
+public class Container {
     private static final JiraRestClient jiraRestClient;
     private static final Map<Class, Object> services = new HashMap<>();
 
@@ -44,7 +46,7 @@ class Container {
         jiraRestClient = unchecked(() -> fetch(jiraIssueTracker, "restClient", JiraRestClient.class));
     }
 
-    static synchronized <T> T get(Class<T> cls) {
+    public static synchronized <T> T get(Class<T> cls) {
         Object service = services.get(cls);
         if (service == null) {
             service = unchecked(() -> cls.newInstance());
@@ -53,7 +55,7 @@ class Container {
         return cls.cast(service);
     }
 
-    static JiraRestClient getJiraRestClient() {
+    public static JiraRestClient getJiraRestClient() {
         return jiraRestClient;
     }
 }
