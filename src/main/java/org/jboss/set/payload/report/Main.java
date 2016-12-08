@@ -21,9 +21,15 @@
  */
 package org.jboss.set.payload.report;
 
+import org.jboss.jbossset.bugclerk.Level;
+import org.jboss.jbossset.bugclerk.Violation;
+import org.jboss.set.aphrodite.domain.*;
+import org.jboss.set.aphrodite.domain.Issue;
 import org.jboss.set.payload.report.container.Container;
 
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -33,11 +39,23 @@ public class Main {
         // normally obtain PayloadHome through injection
         final PayloadHome payloadHome = Container.get(PayloadHomeImpl.class);
         final Payload payload = payloadHome.findByPrimaryKey(args[0]);
-        final Collection<Issue> issues = payload.getIssues();
-        issues.forEach((issue) -> {
+        payload.getIssues().stream().sorted(Comparator.comparing(Issue::toString)).forEach((issue) -> {
             //System.out.println(issue.getSignal() + " " + issue.getReport());
-            System.out.println(issue);
+            // TODO: move to domain
+            final Collection<Violation> violations = issue.getViolations();
+            final Level level = violations.stream().map(violation -> violation.getLevel()).reduce((level1, level2) -> max(level1, level2)).orElse(null);
+            final Signal signal;
+            if (level == Level.ERROR) signal = Signal.RED;
+            else if (level == Level.WARNING) signal = Signal.YELLOW;
+            else signal = Signal.GREEN;
+            System.out.println(issue + " " + signal + " " + violations.stream().map(violation -> violation.getMessage()).collect(Collectors.toList()));
         });
         System.exit(0);
+    }
+
+    private static Level max(final Level l1, final Level l2) {
+        if (l1 == Level.ERROR || l2 == Level.ERROR) return Level.ERROR;
+        if (l1 == Level.WARNING || l2 == Level.WARNING) return Level.WARNING;
+        return null;
     }
 }

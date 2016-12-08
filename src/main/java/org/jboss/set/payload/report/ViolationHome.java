@@ -21,56 +21,37 @@
  */
 package org.jboss.set.payload.report;
 
+import org.jboss.jbossset.bugclerk.Candidate;
+import org.jboss.jbossset.bugclerk.RuleEngine;
 import org.jboss.jbossset.bugclerk.Violation;
-import org.jboss.set.aphrodite.issue.trackers.jira.JiraIssue;
-import org.jboss.set.payload.report.container.Container;
+import org.kie.api.runtime.ClassObjectFilter;
+import org.kie.api.runtime.KieSession;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import static org.jboss.set.payload.report.util.Util.fetch;
+import static org.jboss.set.payload.report.util.Util.unchecked;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class Issue extends JiraIssue {
-    private static final URL DUMMY_URL;
+public class ViolationHome {
+    private final static RuleEngine RULE_ENGINE;
+    private final static KieSession KIE_SESSION;
 
     static {
-        try {
-            DUMMY_URL = new URL("file://dummy");
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
+        RULE_ENGINE = new RuleEngine(new HashMap(0));
+        KIE_SESSION = unchecked(() -> fetch(RULE_ENGINE, "ksession", KieSession.class));
     }
 
-    // take this over from super
-    private URL url;
-
-    public Issue() {
-        super(DUMMY_URL);
-    }
-
-//    public Issue(final URL url) {
-//        super(url);
-//    }
-
-    public String getReport() {
-        throw new RuntimeException("NYI: org.jboss.set.payload.report.Issue.getReport");
-    }
-
-    public Signal getSignal() {
-        throw new RuntimeException("NYI: org.jboss.set.payload.report.Issue.getSignal");
-    }
-
-    public Collection<Violation> getViolations() {
-        return Container.get(ViolationHome.class).findByIssue(this);
-    }
-
-    public URL getURL() {
-        return url;
-    }
-
-    public void setURL(final URL url) {
-        this.url = url;
+    public Collection<Violation> findByIssue(final Issue issue) {
+        KIE_SESSION.getFactHandles(new ClassObjectFilter(Violation.class)).forEach(factHandle -> {
+            KIE_SESSION.delete(factHandle);
+        });
+        return RULE_ENGINE.processBugEntry(StreamSupport.stream(Arrays.asList(issue).spliterator(), false).map(issue1 -> new Candidate(issue1)).collect(Collectors.toSet()));
     }
 }
