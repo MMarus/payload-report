@@ -23,8 +23,11 @@ package org.jboss.set.payload.report.container;
 
 import com.atlassian.jira.rest.client.api.JiraRestClient;
 import org.jboss.set.aphrodite.Aphrodite;
+import org.jboss.set.aphrodite.issue.trackers.common.AbstractIssueTracker;
 import org.jboss.set.aphrodite.issue.trackers.jira.JiraIssueTracker;
 
+import java.net.URI;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,12 +40,14 @@ import static org.jboss.set.payload.report.util.Util.unchecked;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class Container {
+    private static final URI SERVER_URI;
     private static final JiraRestClient jiraRestClient;
     private static final Map<Class, Object> services = new HashMap<>();
 
     static {
         final Aphrodite aphrodite = unchecked(() -> Aphrodite.instance());
         final JiraIssueTracker jiraIssueTracker = (JiraIssueTracker) unchecked(() -> fetch(aphrodite, "issueTrackers", Map.class)).get("https://issues.jboss.org");
+        SERVER_URI = unchecked(() -> fetch(jiraIssueTracker, AbstractIssueTracker.class, "baseUrl", URL.class).toURI());
         jiraRestClient = unchecked(() -> fetch(jiraIssueTracker, "restClient", JiraRestClient.class));
     }
 
@@ -57,5 +62,11 @@ public class Container {
 
     public static JiraRestClient getJiraRestClient() {
         return jiraRestClient;
+    }
+
+    // TODO: too ugly
+    @Deprecated
+    public static URI getServerURI() {
+        return SERVER_URI;
     }
 }

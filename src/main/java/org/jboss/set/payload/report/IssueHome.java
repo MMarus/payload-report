@@ -52,7 +52,10 @@ public class IssueHome {
     private final AtomicInteger proxyNum = new AtomicInteger(0);
 
     public Collection<Issue> findByPayload(final Payload payload) {
-        final String jql = "project = JBEAP AND (fixVersion = " + payload.getFixVersion() + " OR Sprint = \"" + payload.getSprint() + "\")";
+        String jql = "project = JBEAP AND (fixVersion = " + payload.getFixVersion();
+        final String sprint = payload.getSprint();
+        if (sprint != null) jql += " OR Sprint = \"" + payload.getSprint() + "\"";
+        jql += ")";
         // Note that the following fields: summary, issuetype, created, updated, project and status are required.
         final Set<String> fields = new HashSet<>(Arrays.asList("summary", "issuetype", "created", "updated", "project", "status", "key"));
         final Iterable<com.atlassian.jira.rest.client.api.domain.Issue> issues = jiraRestClient.getSearchClient().searchJql(jql, null, null, fields).claim().getIssues();

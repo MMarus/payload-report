@@ -41,7 +41,11 @@ public class Util {
     }
 
     public static <T> T fetch(final Object source, final String fieldName, final Class<T> resultClass) throws NoSuchFieldException {
-        final Field field = source.getClass().getDeclaredField(fieldName);
+        return fetch(source, source.getClass(), fieldName, resultClass);
+    }
+
+    public static <T> T fetch(final Object source, final Class<?> declaringClass, final String fieldName, final Class<T> resultClass) throws NoSuchFieldException {
+        final Field field = declaringClass.getDeclaredField(fieldName);
         field.setAccessible(true);
         return resultClass.cast(unchecked(() -> field.get(source)));
     }

@@ -42,13 +42,18 @@ public class Main {
         payload.getIssues().stream().sorted(Comparator.comparing(Issue::toString)).forEach((issue) -> {
             //System.out.println(issue.getSignal() + " " + issue.getReport());
             // TODO: move to domain
-            final Collection<Violation> violations = issue.getViolations();
-            final Level level = violations.stream().map(violation -> violation.getLevel()).reduce((level1, level2) -> max(level1, level2)).orElse(null);
-            final Signal signal;
-            if (level == Level.ERROR) signal = Signal.RED;
-            else if (level == Level.WARNING) signal = Signal.YELLOW;
-            else signal = Signal.GREEN;
-            System.out.println(issue + " " + signal + " " + violations.stream().map(violation -> violation.getMessage()).collect(Collectors.toList()));
+            try {
+                final Collection<Violation> violations = issue.getViolations();
+                final Level level = violations.stream().map(violation -> violation.getLevel()).reduce((level1, level2) -> max(level1, level2)).orElse(null);
+                final Signal signal;
+                if (level == Level.ERROR) signal = Signal.RED;
+                else if (level == Level.WARNING) signal = Signal.YELLOW;
+                else signal = Signal.GREEN;
+                System.out.println(issue + " " + signal + " " + violations.stream().map(violation -> violation.getMessage()).collect(Collectors.toList()));
+            } catch (Exception e) {
+                System.out.println(issue + " " + e.toString());
+                throw e;
+            }
         });
         System.exit(0);
     }
