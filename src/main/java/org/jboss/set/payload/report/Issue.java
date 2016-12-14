@@ -23,11 +23,14 @@ package org.jboss.set.payload.report;
 
 import org.jboss.jbossset.bugclerk.Violation;
 import org.jboss.set.aphrodite.issue.trackers.jira.JiraIssue;
-import org.jboss.set.payload.report.container.Container;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.function.Supplier;
+
+import static org.jboss.set.payload.report.container.Container.get;
+import static org.jboss.set.payload.report.util.Lazy.lazy;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -46,6 +49,8 @@ public class Issue extends JiraIssue {
     // take this over from super
     private URL url;
 
+    private final Supplier<Collection<Violation>> violations = lazy(() -> get(ViolationHome.class).findByIssue(this));
+
     public Issue() {
         super(DUMMY_URL);
     }
@@ -63,7 +68,7 @@ public class Issue extends JiraIssue {
     }
 
     public Collection<Violation> getViolations() {
-        return Container.get(ViolationHome.class).findByIssue(this);
+        return violations.get();
     }
 
     public URL getURL() {
