@@ -29,6 +29,8 @@ import org.jboss.invocation.proxy.ProxyFactory;
 import org.jboss.set.aphrodite.domain.Issue;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
@@ -42,6 +44,7 @@ public class DomainWrapperTest {
         final ProxyFactory<DummyIssue> proxyFactory = new ProxyFactory<>(proxyConfiguration);
         final Interceptor interceptor = Interceptors.getChainedInterceptor(new DummyInterceptor());
         final Issue issue = proxyFactory.newInstance(new InterceptorInvocationHandler(interceptor));
-        System.out.println(issue);
+        final String result = issue.toString();
+        assertEquals("I was here", result);
     }
 }

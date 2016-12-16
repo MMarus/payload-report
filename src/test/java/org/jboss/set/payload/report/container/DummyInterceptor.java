@@ -30,6 +30,6 @@ import org.jboss.invocation.InterceptorContext;
 public class DummyInterceptor implements Interceptor {
     @Override
     public Object processInvocation(final InterceptorContext interceptorContext) throws Exception {
-        throw new RuntimeException("NYI: DummyInterceptor.processInvocation");
+        return "I was here";
     }
 }
