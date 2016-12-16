@@ -48,7 +48,7 @@ public class ViolationHome {
         KIE_SESSION = unchecked(() -> fetch(RULE_ENGINE, "ksession", KieSession.class));
     }
 
-    public Collection<Violation> findByIssue(final Issue issue) {
+    public Collection<Violation> findByIssue(final org.jboss.set.aphrodite.domain.Issue issue) {
         KIE_SESSION.getFactHandles(new ClassObjectFilter(Violation.class)).forEach(factHandle -> {
             KIE_SESSION.delete(factHandle);
         });

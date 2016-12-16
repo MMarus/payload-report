@@ -19,19 +19,41 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.set.payload.report;
+package org.jboss.set.payload.report.jira;
 
-import org.jboss.jbossset.bugclerk.Violation;
+import com.atlassian.jira.rest.client.api.domain.Version;
+import org.jboss.set.payload.report.Issue;
+import org.jboss.set.payload.report.Payload;
+import org.jboss.set.payload.report.container.Container;
 
-import java.net.URL;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public interface Issue {
-    List<URL> getDependsOn();
+public class JiraPayload implements Payload {
+    private final JiraIssueHome issueHome = Container.get(JiraIssueHome.class);
 
-    Collection<Violation> getViolations();
+    private final Version version;
+    private final String sprint;
+
+    JiraPayload(final Version version, final String sprint) {
+        this.version = version;
+        this.sprint = sprint;
+    }
+
+    @Override
+    public String getFixVersion() {
+        return version.getName();
+    }
+
+    @Override
+    public Collection<? extends Issue> getIssues() {
+        return issueHome.findByPayload(this);
+    }
+
+    @Override
+    public String getSprint() {
+        return sprint;
+    }
 }

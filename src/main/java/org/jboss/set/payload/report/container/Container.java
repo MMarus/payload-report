@@ -23,8 +23,10 @@ package org.jboss.set.payload.report.container;
 
 import com.atlassian.jira.rest.client.api.JiraRestClient;
 import org.jboss.set.aphrodite.Aphrodite;
+import org.jboss.set.aphrodite.issue.trackers.bugzilla.BugzillaIssueTracker;
 import org.jboss.set.aphrodite.issue.trackers.common.AbstractIssueTracker;
 import org.jboss.set.aphrodite.issue.trackers.jira.JiraIssueTracker;
+import org.jboss.set.aphrodite.spi.IssueTrackerService;
 
 import java.net.URI;
 import java.net.URL;
@@ -46,9 +48,12 @@ public class Container {
 
     static {
         final Aphrodite aphrodite = unchecked(() -> Aphrodite.instance());
-        final JiraIssueTracker jiraIssueTracker = (JiraIssueTracker) unchecked(() -> fetch(aphrodite, "issueTrackers", Map.class)).get("https://issues.jboss.org");
+        final Map<String, IssueTrackerService> issueTrackers = unchecked(() -> fetch(aphrodite, "issueTrackers", Map.class));
+        final JiraIssueTracker jiraIssueTracker = (JiraIssueTracker) issueTrackers.get("https://issues.jboss.org");
         SERVER_URI = unchecked(() -> fetch(jiraIssueTracker, AbstractIssueTracker.class, "baseUrl", URL.class).toURI());
         jiraRestClient = unchecked(() -> fetch(jiraIssueTracker, "restClient", JiraRestClient.class));
+        final BugzillaIssueTracker bugzillaIssueTracker = (BugzillaIssueTracker) issueTrackers.get("https://bugzilla.redhat.com");
+        services.put(BugzillaIssueTracker.class, bugzillaIssueTracker);
     }
 
     public static synchronized <T> T get(Class<T> cls) {
@@ -60,6 +65,7 @@ public class Container {
         return cls.cast(service);
     }
 
+    @Deprecated
     public static JiraRestClient getJiraRestClient() {
         return jiraRestClient;
     }

@@ -23,8 +23,6 @@ package org.jboss.set.payload.report;
 
 import org.jboss.jbossset.bugclerk.Level;
 import org.jboss.jbossset.bugclerk.Violation;
-import org.jboss.set.aphrodite.domain.*;
-import org.jboss.set.aphrodite.domain.Issue;
 import org.jboss.set.payload.report.container.Container;
 
 import java.util.Collection;
@@ -37,7 +35,7 @@ import java.util.stream.Collectors;
 public class Main {
     public static void main(final String[] args) throws Exception {
         // normally obtain PayloadHome through injection
-        final PayloadHome payloadHome = Container.get(PayloadHomeImpl.class);
+        final PayloadHome payloadHome = Container.get(AggregatePayloadHome.class);
         final Payload payload = payloadHome.findByPrimaryKey(args[0]);
         payload.getIssues().stream().sorted(Comparator.comparing(Issue::toString)).forEach((issue) -> {
             //System.out.println(issue.getSignal() + " " + issue.getReport());
@@ -50,9 +48,10 @@ public class Main {
                 else if (level == Level.WARNING) signal = Signal.YELLOW;
                 else signal = Signal.GREEN;
                 System.out.println(issue + " " + signal + " " + violations.stream().map(violation -> violation.getMessage()).collect(Collectors.toList()));
+                System.out.println("   " + issue.getDependsOn());
             } catch (Exception e) {
                 System.out.println(issue + " " + e.toString());
-                throw e;
+                //throw e;
             }
         });
         System.exit(0);

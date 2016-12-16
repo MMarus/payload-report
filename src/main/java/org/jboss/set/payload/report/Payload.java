@@ -29,7 +29,7 @@ import java.util.Collection;
 public interface Payload {
     String getFixVersion();
 
-    Collection<Issue> getIssues();
+    Collection<? extends Issue> getIssues();
 
     String getSprint();
 }

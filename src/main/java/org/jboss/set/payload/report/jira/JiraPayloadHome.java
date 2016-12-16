@@ -19,11 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.set.payload.report;
+package org.jboss.set.payload.report.jira;
 
 import com.atlassian.httpclient.api.HttpClient;
 import com.atlassian.jira.rest.client.api.JiraRestClient;
 import com.atlassian.jira.rest.client.api.domain.Version;
+import org.jboss.set.payload.report.ObjectNotFoundException;
+import org.jboss.set.payload.report.Payload;
+import org.jboss.set.payload.report.PayloadHome;
 import org.jboss.set.payload.report.container.Container;
 import org.jboss.set.payload.report.jira.rest.client.api.domain.Page;
 import org.jboss.set.payload.report.jira.rest.client.api.domain.Sprint;
@@ -39,7 +42,7 @@ import static org.jboss.set.payload.report.util.Util.unchecked;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class PayloadHomeImpl implements PayloadHome {
+public class JiraPayloadHome implements PayloadHome {
     // TODO: get rid of the hard coded 3466
     private static final int EAP_7_SCRUM_DEV_BOARD_ID = 3466;
 
@@ -63,6 +66,6 @@ public class PayloadHomeImpl implements PayloadHome {
                 .findFirst()
                 .orElseThrow(() -> new ObjectNotFoundException(arg));
         //System.out.println("version = " + version);
-        return new PayloadImpl(version, sprint != null ? sprintName : null);
+        return new JiraPayload(version, sprint != null ? sprintName : null);
     }
 }

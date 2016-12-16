@@ -19,19 +19,41 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.set.payload.report;
+package org.jboss.set.payload.report.bugzilla;
 
-import org.jboss.jbossset.bugclerk.Violation;
+import org.jboss.set.payload.report.Issue;
+import org.jboss.set.payload.report.Payload;
+import org.jboss.set.payload.report.container.Container;
 
-import java.net.URL;
 import java.util.Collection;
-import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public interface Issue {
-    List<URL> getDependsOn();
+public class BugzillaPayload implements Payload {
+    private static final BugzillaIssueHome BUGZILLA_ISSUE_HOME = Container.get(BugzillaIssueHome.class);
 
-    Collection<Violation> getViolations();
+    private final org.jboss.set.aphrodite.domain.Issue issue;
+
+    BugzillaPayload(final org.jboss.set.aphrodite.domain.Issue issue) {
+        this.issue = issue;
+    }
+
+    @Override
+    public String getFixVersion() {
+        // TODO: jira specific
+        throw new RuntimeException("NYI: org.jboss.set.payload.report.bugzilla.BugzillaPayload.getFixVersion");
+    }
+
+    @Override
+    public Collection<Issue> getIssues() {
+        return issue.getDependsOn().parallelStream().map((url) -> BUGZILLA_ISSUE_HOME.proxy(url)).collect(Collectors.toSet());
+    }
+
+    @Override
+    public String getSprint() {
+        // TODO: jira specific
+        throw new RuntimeException("NYI: org.jboss.set.payload.report.bugzilla.BugzillaPayload.getSprint");
+    }
 }

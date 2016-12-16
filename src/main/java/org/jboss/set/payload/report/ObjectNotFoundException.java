@@ -28,4 +28,12 @@ public class ObjectNotFoundException extends Exception {
     public ObjectNotFoundException(final String id) {
         super(id);
     }
+
+    public ObjectNotFoundException(final Exception e) {
+        super(e);
+    }
+
+    public ObjectNotFoundException(final String id, final Exception e) {
+        super(id, e);
+    }
 }

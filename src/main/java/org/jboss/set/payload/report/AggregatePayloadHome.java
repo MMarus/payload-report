@@ -21,17 +21,30 @@
  */
 package org.jboss.set.payload.report;
 
-import org.jboss.jbossset.bugclerk.Violation;
+import org.jboss.set.payload.report.bugzilla.BugzillaPayloadHome;
+import org.jboss.set.payload.report.container.Container;
+import org.jboss.set.payload.report.jira.JiraPayloadHome;
 
-import java.net.URL;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public interface Issue {
-    List<URL> getDependsOn();
+public class AggregatePayloadHome implements PayloadHome {
+    private List<PayloadHome> payloadHomes = Arrays.asList(Container.get(BugzillaPayloadHome.class), Container.get(JiraPayloadHome.class)); // TODO: configure
 
-    Collection<Violation> getViolations();
+    @Override
+    public Payload findByPrimaryKey(final String arg) throws ObjectNotFoundException {
+        Optional<ObjectNotFoundException> last = Optional.empty();
+        for (PayloadHome home : payloadHomes) {
+            try {
+                return home.findByPrimaryKey(arg);
+            } catch (ObjectNotFoundException e) {
+                last = Optional.of(e);
+            }
+        }
+        throw last.orElse(new ObjectNotFoundException(arg));
+    }
 }

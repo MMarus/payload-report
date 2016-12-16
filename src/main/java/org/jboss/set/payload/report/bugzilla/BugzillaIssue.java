@@ -19,39 +19,45 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.set.payload.report;
+package org.jboss.set.payload.report.bugzilla;
 
-import com.atlassian.jira.rest.client.api.domain.Version;
-import org.jboss.set.payload.report.container.Container;
+import org.jboss.jbossset.bugclerk.Violation;
+import org.jboss.set.aphrodite.domain.Issue;
+import org.jboss.set.payload.report.ViolationHome;
 
+import java.net.URL;
 import java.util.Collection;
+import java.util.List;
+import java.util.function.Supplier;
+
+import static org.jboss.set.payload.report.container.Container.get;
+import static org.jboss.set.payload.report.util.Lazy.lazy;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class PayloadImpl implements Payload {
-    private final IssueHome issueHome = Container.get(IssueHome.class);
+public class BugzillaIssue implements org.jboss.set.payload.report.Issue {
+    private final Issue issue;
+    private final Supplier<Collection<Violation>> violations;
 
-    private final Version version;
-    private final String sprint;
+    public BugzillaIssue() {
+        // for proxy
+        issue = null;
+        violations = null;
+    }
 
-    PayloadImpl(final Version version, final String sprint) {
-        this.version = version;
-        this.sprint = sprint;
+    public BugzillaIssue(final Issue issue) {
+        this.issue = issue;
+        violations = lazy(() -> get(ViolationHome.class).findByIssue(issue));
     }
 
     @Override
-    public String getFixVersion() {
-        return version.getName();
+    public List<URL> getDependsOn() {
+        return issue.getDependsOn();
     }
 
     @Override
-    public Collection<Issue> getIssues() {
-        return issueHome.findByPayload(this);
-    }
-
-    @Override
-    public String getSprint() {
-        return sprint;
+    public Collection<Violation> getViolations() {
+        return violations.get();
     }
 }

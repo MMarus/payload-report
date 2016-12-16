@@ -19,19 +19,38 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.set.payload.report;
+package org.jboss.set.payload.report.bugzilla;
 
-import org.jboss.jbossset.bugclerk.Violation;
+import org.jboss.set.aphrodite.issue.trackers.bugzilla.BugzillaIssueTracker;
+import org.jboss.set.aphrodite.spi.NotFoundException;
+import org.jboss.set.payload.report.AbstractIssueHome;
+import org.jboss.set.payload.report.ObjectNotFoundException;
+import org.jboss.set.payload.report.container.Container;
 
 import java.net.URL;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public interface Issue {
-    List<URL> getDependsOn();
+public class BugzillaIssueHome extends AbstractIssueHome<URL, BugzillaIssue> {
+    private final static BugzillaIssueTracker BUGZILLA_ISSUE_TRACKER = Container.get(BugzillaIssueTracker.class);
 
-    Collection<Violation> getViolations();
+    @Override
+    protected Class<BugzillaIssue> getEntityClass() {
+        return BugzillaIssue.class;
+    }
+
+    @Override
+    protected BugzillaIssue load(final URL primaryKey) throws ObjectNotFoundException {
+        try {
+            return new BugzillaIssue(BUGZILLA_ISSUE_TRACKER.getIssue(primaryKey));
+        } catch (NotFoundException e) {
+            throw new ObjectNotFoundException(primaryKey.toString(), e);
+        }
+    }
+
+    @Override
+    protected BugzillaIssue proxy(final URL primaryKey) {
+        return super.proxy(primaryKey);
+    }
 }
