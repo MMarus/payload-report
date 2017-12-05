@@ -21,7 +21,7 @@
  */
 package org.jboss.set.payload.report;
 
-import org.jboss.jbossset.bugclerk.Level;
+import org.jboss.jbossset.bugclerk.Severity;
 import org.jboss.jbossset.bugclerk.Violation;
 import org.jboss.set.payload.report.container.Container;
 
@@ -37,15 +37,15 @@ public class Main {
         // normally obtain PayloadHome through injection
         final PayloadHome payloadHome = Container.get(AggregatePayloadHome.class);
         final Payload payload = payloadHome.findByPrimaryKey(args[0]);
-        payload.getIssues().stream().sorted(Comparator.comparing(Issue::toString)).forEach((issue) -> {
+        final int numIssues = payload.getIssues().stream().sorted(Comparator.comparing(Issue::toString)).mapToInt((issue) -> {
             //System.out.println(issue.getSignal() + " " + issue.getReport());
             // TODO: move to domain
             try {
                 final Collection<Violation> violations = issue.getViolations();
-                final Level level = violations.stream().map(violation -> violation.getLevel()).reduce((level1, level2) -> max(level1, level2)).orElse(null);
+                final Severity severity = violations.stream().map(violation -> violation.getLevel()).reduce((level1, level2) -> max(level1, level2)).orElse(null);
                 final Signal signal;
-                if (level == Level.ERROR) signal = Signal.RED;
-                else if (level == Level.WARNING) signal = Signal.YELLOW;
+                if (severity == Severity.BLOCKER || severity == Severity.CRITICAL) signal = Signal.RED;
+                else if (severity == Severity.MAJOR) signal = Signal.YELLOW;
                 else signal = Signal.GREEN;
                 System.out.println(issue + " " + signal + " " + violations.stream().map(violation -> violation.getMessage()).collect(Collectors.toList()));
                 System.out.println("   " + issue.getDependsOn());
@@ -53,13 +53,30 @@ public class Main {
                 System.out.println(issue + " " + e.toString());
                 //throw e;
             }
-        });
+            return 1;
+        }).sum();
+        System.out.println("Total issues: " + numIssues);
         System.exit(0);
     }
 
-    private static Level max(final Level l1, final Level l2) {
-        if (l1 == Level.ERROR || l2 == Level.ERROR) return Level.ERROR;
-        if (l1 == Level.WARNING || l2 == Level.WARNING) return Level.WARNING;
-        return null;
+    private static int level(final Severity severity) {
+        switch (severity) {
+            case BLOCKER:
+                return 5;
+            case CRITICAL:
+                return 4;
+            case MAJOR:
+                return 3;
+            case MINOR:
+                return 2;
+            case TRIVIAL:
+                return 1;
+            default:
+                return 0;
+        }
+    }
+
+    private static Severity max(final Severity l1, final Severity l2) {
+        if (level(l1) > level(l2)) return l1; else return l2;
     }
 }

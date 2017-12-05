@@ -24,14 +24,13 @@ package org.jboss.set.payload.report;
 import org.jboss.jbossset.bugclerk.Candidate;
 import org.jboss.jbossset.bugclerk.RuleEngine;
 import org.jboss.jbossset.bugclerk.Violation;
+import org.jboss.jbossset.bugclerk.aphrodite.AphroditeClient;
 import org.kie.api.runtime.ClassObjectFilter;
 import org.kie.api.runtime.KieSession;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import static org.jboss.set.payload.report.util.Util.fetch;
 import static org.jboss.set.payload.report.util.Util.unchecked;
@@ -44,7 +43,7 @@ public class ViolationHome {
     private final static KieSession KIE_SESSION;
 
     static {
-        RULE_ENGINE = new RuleEngine(new HashMap(0));
+        RULE_ENGINE = new RuleEngine(new HashMap(0), new AphroditeClient());
         KIE_SESSION = unchecked(() -> fetch(RULE_ENGINE, "ksession", KieSession.class));
     }
 
@@ -52,6 +51,8 @@ public class ViolationHome {
         KIE_SESSION.getFactHandles(new ClassObjectFilter(Violation.class)).forEach(factHandle -> {
             KIE_SESSION.delete(factHandle);
         });
-        return RULE_ENGINE.processBugEntry(StreamSupport.stream(Arrays.asList(issue).spliterator(), false).map(issue1 -> new Candidate(issue1)).collect(Collectors.toSet()));
+        final Candidate candidate = new Candidate(issue);
+        RULE_ENGINE.processBugEntry(Arrays.asList(candidate));
+        return candidate.getViolations();
     }
 }
