@@ -27,7 +27,9 @@ import org.jboss.set.payload.report.ViolationHome;
 
 import java.net.URL;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static org.jboss.set.payload.report.container.Container.get;
@@ -52,8 +54,18 @@ public class BugzillaIssue implements org.jboss.set.payload.report.Issue {
     }
 
     @Override
+    public Date getCreationDate() {
+        throw new IllegalStateException("NYI");
+    }
+
+    @Override
     public List<URL> getDependsOn() {
         return issue.getDependsOn();
+    }
+
+    @Override
+    public Optional<Date> getResolutionDate() {
+        throw new IllegalStateException("NYI");
     }
 
     @Override

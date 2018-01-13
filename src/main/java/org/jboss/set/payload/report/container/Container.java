@@ -49,7 +49,7 @@ public class Container {
     static {
         final Aphrodite aphrodite = unchecked(() -> Aphrodite.instance());
         final Map<String, IssueTrackerService> issueTrackers = unchecked(() -> fetch(aphrodite, "issueTrackers", Map.class));
-        final JiraIssueTracker jiraIssueTracker = (JiraIssueTracker) issueTrackers.get("https://issues.jboss.org");
+        final JiraIssueTracker jiraIssueTracker = (JiraIssueTracker) issueTrackers.get("https://issues.redhat.com");
         SERVER_URI = unchecked(() -> fetch(jiraIssueTracker, AbstractIssueTracker.class, "baseUrl", URL.class).toURI());
         jiraRestClient = unchecked(() -> fetch(jiraIssueTracker, "restClient", JiraRestClient.class));
         final BugzillaIssueTracker bugzillaIssueTracker = (BugzillaIssueTracker) issueTrackers.get("https://bugzilla.redhat.com");

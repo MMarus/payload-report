@@ -25,13 +25,19 @@ import org.jboss.jbossset.bugclerk.Violation;
 
 import java.net.URL;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public interface Issue {
+    Date getCreationDate();
+
     List<URL> getDependsOn();
+
+    Optional<Date> getResolutionDate();
 
     Collection<Violation> getViolations();
 }

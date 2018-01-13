@@ -22,6 +22,8 @@
 package org.jboss.set.payload.report;
 
 import java.util.Collection;
+import java.util.Date;
+import java.util.Optional;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -30,6 +32,8 @@ public interface Payload {
     String getFixVersion();
 
     Collection<? extends Issue> getIssues();
+
+    Optional<Date> getReleaseDate();
 
     String getSprint();
 }

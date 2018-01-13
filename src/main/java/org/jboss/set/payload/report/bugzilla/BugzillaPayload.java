@@ -26,6 +26,8 @@ import org.jboss.set.payload.report.Payload;
 import org.jboss.set.payload.report.container.Container;
 
 import java.util.Collection;
+import java.util.Date;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -49,6 +51,11 @@ public class BugzillaPayload implements Payload {
     @Override
     public Collection<Issue> getIssues() {
         return issue.getDependsOn().parallelStream().map((url) -> BUGZILLA_ISSUE_HOME.proxy(url)).collect(Collectors.toSet());
+    }
+
+    @Override
+    public Optional<Date> getReleaseDate() {
+        throw new IllegalStateException("NYI: org.jboss.set.payload.report.bugzilla.BugzillaPayload.getReleaseDate");
     }
 
     @Override

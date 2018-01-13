@@ -22,8 +22,6 @@
 package org.jboss.set.payload.report.util;
 
 import java.lang.reflect.Field;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -45,6 +43,7 @@ public class Util {
     }
 
     public static <T> T fetch(final Object source, final Class<?> declaringClass, final String fieldName, final Class<T> resultClass) throws NoSuchFieldException {
+        if (source == null) throw new NullPointerException("source is null");
         final Field field = declaringClass.getDeclaredField(fieldName);
         field.setAccessible(true);
         return resultClass.cast(unchecked(() -> field.get(source)));

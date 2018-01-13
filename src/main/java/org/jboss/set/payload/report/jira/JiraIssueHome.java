@@ -49,8 +49,8 @@ public class JiraIssueHome extends AbstractIssueHome<String, JiraIssue> {
         if (sprint != null) jql += " OR Sprint = \"" + payload.getSprint() + "\"";
         jql += ")";
         // Note that the following fields: summary, issuetype, created, updated, project and status are required.
-        final Set<String> fields = new HashSet<>(Arrays.asList("summary", "issuetype", "created", "updated", "project", "status", "key"));
-        final Iterable<com.atlassian.jira.rest.client.api.domain.Issue> issues = jiraRestClient.getSearchClient().searchJql(jql, null, null, fields).claim().getIssues();
+        final Set<String> fields = new HashSet<>(Arrays.asList("summary", "issuetype", "created", "updated", "project", "status", "key", "resolutiondate"));
+        final Iterable<com.atlassian.jira.rest.client.api.domain.Issue> issues = jiraRestClient.getSearchClient().searchJql(jql, Integer.MAX_VALUE, null, fields).claim().getIssues();
         // TODO: pre-fill the cache with the obtained results
         return StreamSupport.stream(issues.spliterator(), true)
                 .map(issue -> proxy(issue.getKey()))
@@ -65,7 +65,7 @@ public class JiraIssueHome extends AbstractIssueHome<String, JiraIssue> {
     protected JiraIssue load(final String primaryKey) {
         com.atlassian.jira.rest.client.api.domain.Issue jiraIssue = unchecked(() -> jiraRestClient.getIssueClient().getIssue(primaryKey).get());
         final URL url = unchecked(() -> new URL("https://issues.jboss.org/browse/" + jiraIssue.getKey()));
-        final JiraIssue issue = new JiraIssue();
+        final JiraIssue issue = new JiraIssue(jiraIssue);
         JiraIssueHelper.copy(url, jiraIssue, issue);
         issue.setURL(url);
         return issue;

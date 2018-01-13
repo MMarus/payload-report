@@ -25,8 +25,11 @@ import com.atlassian.jira.rest.client.api.domain.Version;
 import org.jboss.set.payload.report.Issue;
 import org.jboss.set.payload.report.Payload;
 import org.jboss.set.payload.report.container.Container;
+import org.joda.time.DateTime;
 
 import java.util.Collection;
+import java.util.Date;
+import java.util.Optional;
 
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
@@ -50,6 +53,15 @@ public class JiraPayload implements Payload {
     @Override
     public Collection<? extends Issue> getIssues() {
         return issueHome.findByPayload(this);
+    }
+
+    @Override
+    public Optional<Date> getReleaseDate() {
+        final DateTime releaseDate = version.getReleaseDate();
+        if (version.isReleased() && releaseDate != null)
+            return Optional.of(releaseDate.toDate());
+        else
+            return Optional.empty();
     }
 
     @Override

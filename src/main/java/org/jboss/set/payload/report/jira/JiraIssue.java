@@ -25,10 +25,13 @@ import org.jboss.jbossset.bugclerk.Violation;
 import org.jboss.set.payload.report.Issue;
 import org.jboss.set.payload.report.Signal;
 import org.jboss.set.payload.report.ViolationHome;
+import org.joda.time.DateTime;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Date;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static org.jboss.set.payload.report.container.Container.get;
@@ -39,6 +42,9 @@ import static org.jboss.set.payload.report.util.Lazy.lazy;
  */
 public class JiraIssue extends org.jboss.set.aphrodite.issue.trackers.jira.JiraIssue implements Issue {
     private static final URL DUMMY_URL;
+
+    private final com.atlassian.jira.rest.client.api.domain.Issue delegate;
+    private Optional<Date> resolutionDate;
 
     static {
         try {
@@ -53,16 +59,42 @@ public class JiraIssue extends org.jboss.set.aphrodite.issue.trackers.jira.JiraI
 
     private final Supplier<Collection<Violation>> violations = lazy(() -> get(ViolationHome.class).findByIssue(this));
 
+    // for proxy purposes only
     public JiraIssue() {
         super(DUMMY_URL);
+        delegate = null;
+    }
+
+    protected JiraIssue(com.atlassian.jira.rest.client.api.domain.Issue delegate) {
+        super(DUMMY_URL);
+        this.delegate = delegate;
     }
 
 //    public Issue(final URL url) {
 //        super(url);
 //    }
 
+    @Override
+    public Date getCreationDate() {
+        return super.getCreationTime().orElseThrow(() -> new IllegalStateException("No creation date on " + this));
+    }
+
     public String getReport() {
         throw new RuntimeException("NYI: org.jboss.set.payload.report.jira.Issue.getReport");
+    }
+
+    @Override
+    public Optional<Date> getResolutionDate() {
+        if (resolutionDate != null)
+            return resolutionDate;
+        // this is slow, but right now there are no other means
+        final String value = (String) delegate.getField("resolutiondate").getValue();
+        if (value != null) {
+            resolutionDate = Optional.of(new DateTime(value).toDate());
+        } else {
+            resolutionDate = Optional.empty();
+        }
+        return resolutionDate;
     }
 
     public Signal getSignal() {
