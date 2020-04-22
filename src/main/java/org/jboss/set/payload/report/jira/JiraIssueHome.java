@@ -43,17 +43,30 @@ import static org.jboss.set.payload.report.util.Util.unchecked;
 public class JiraIssueHome extends AbstractIssueHome<String, JiraIssue> {
     private final JiraRestClient jiraRestClient = Container.getJiraRestClient();
 
+    private JiraIssue create(final com.atlassian.jira.rest.client.api.domain.Issue jiraIssue) {
+        final URL url = unchecked(() -> new URL("https://issues.jboss.org/browse/" + jiraIssue.getKey()));
+        final JiraIssue issue = new JiraIssue(jiraIssue);
+        JiraIssueHelper.copy(url, jiraIssue, issue);
+        issue.setURL(url);
+        return issue;
+    }
+
     public Collection<JiraIssue> findByPayload(final Payload payload) {
         String jql = "project = JBEAP AND (fixVersion = " + payload.getFixVersion();
         final String sprint = payload.getSprint();
         if (sprint != null) jql += " OR Sprint = \"" + payload.getSprint() + "\"";
         jql += ")";
         // Note that the following fields: summary, issuetype, created, updated, project and status are required.
-        final Set<String> fields = new HashSet<>(Arrays.asList("summary", "issuetype", "created", "updated", "project", "status", "key", "resolutiondate"));
+        // key and resolutiondate are needed for TimeToMarket
+        // components and priority are mandated by Aphrodite
+        final Set<String> fields = new HashSet<>(Arrays.asList("summary", "issuetype", "created", "updated", "project", "status", "key", "resolutiondate", "components", "priority"));
         final Iterable<com.atlassian.jira.rest.client.api.domain.Issue> issues = jiraRestClient.getSearchClient().searchJql(jql, Integer.MAX_VALUE, null, fields).claim().getIssues();
-        // TODO: pre-fill the cache with the obtained results
         return StreamSupport.stream(issues.spliterator(), true)
-                .map(issue -> proxy(issue.getKey()))
+                .map(issue -> {
+                        final String key = issue.getKey();
+                        cache(key, () -> create(issue));
+                        return proxy(issue.getKey());
+                    })
                 .collect(Collectors.toList());
     }
 
@@ -64,10 +77,6 @@ public class JiraIssueHome extends AbstractIssueHome<String, JiraIssue> {
 
     protected JiraIssue load(final String primaryKey) {
         com.atlassian.jira.rest.client.api.domain.Issue jiraIssue = unchecked(() -> jiraRestClient.getIssueClient().getIssue(primaryKey).get());
-        final URL url = unchecked(() -> new URL("https://issues.jboss.org/browse/" + jiraIssue.getKey()));
-        final JiraIssue issue = new JiraIssue(jiraIssue);
-        JiraIssueHelper.copy(url, jiraIssue, issue);
-        issue.setURL(url);
-        return issue;
+        return create(jiraIssue);
     }
 }

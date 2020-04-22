@@ -39,6 +39,7 @@ public class TimeToMarket {
                     System.out.println("r2 = " + r2);
                 }
             );
+        System.out.println(payload.getFixVersion() + ":");
         System.out.println("Total issues: " + result.numIssues);
         System.out.println("Average resolution age: " + TimeUnit.MILLISECONDS.toDays(result.totalResolutionAge / result.numIssues));
         System.out.println("Average time to market: " + TimeUnit.MILLISECONDS.toDays(result.totalTimeToMarket / result.numIssues));

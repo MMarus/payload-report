@@ -60,7 +60,7 @@ public class JiraPayloadHome implements PayloadHome {
         final String sprintName = "EAP " + arg.substring(0, arg.length() - 3); // strip .GA
         final Page<Sprint> page = agileRestClient.getAllSprints(EAP_7_SCRUM_DEV_BOARD_ID, null, null, null).claim();
         final Sprint sprint = StreamSupport.stream(page.getValues().spliterator(), false).filter(s -> s.getName().equals(sprintName)).findAny().orElse(null);
-        System.out.println("Found sprint " + sprint);
+        //System.out.println("Found sprint " + sprint);
         final Version version = StreamSupport.stream(jiraRestClient.getProjectClient().getProject("JBEAP").claim().getVersions().spliterator(), false)
                 .filter(v -> v.getName().equals(arg))
                 .findFirst()

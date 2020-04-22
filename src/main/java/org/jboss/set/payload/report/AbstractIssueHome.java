@@ -30,6 +30,7 @@ import org.jboss.set.payload.report.container.Cache;
 import org.jboss.set.payload.report.entity.InstanceLoadInterceptor;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
 import static org.jboss.set.payload.report.util.Util.unchecked;
 
@@ -39,6 +40,14 @@ import static org.jboss.set.payload.report.util.Util.unchecked;
 public abstract class AbstractIssueHome<K, E extends Issue> implements IssueHome<K> {
     private final Cache<K, Issue> cache = new Cache<>();
     private final AtomicInteger proxyNum = new AtomicInteger(0);
+
+    protected void cache(final K key, final Supplier<E> supplier) {
+        synchronized (cache) {
+            if (!cache.containsKey(key)) {
+                cache.put(key, supplier.get());
+            }
+        }
+    }
 
     /**
      * @param key primary key

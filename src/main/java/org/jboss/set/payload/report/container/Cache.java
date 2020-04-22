@@ -21,7 +21,8 @@
  */
 package org.jboss.set.payload.report.container;
 
-import java.lang.ref.WeakReference;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,7 +34,7 @@ import java.util.Set;
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
 public class Cache<K, V> implements Map<K, V> {
-    private final HashMap<K, WeakReference<V>> map = new HashMap<>();
+    private final HashMap<K, SoftReference<V>> map = new HashMap<>();
 
     @Override
     public void clear() {
@@ -58,7 +59,7 @@ public class Cache<K, V> implements Map<K, V> {
 
     @Override
     public V get(final Object key) {
-        final WeakReference<V> ref = map.get(key);
+        final Reference<V> ref = map.get(key);
         if (ref == null) return null;
         return ref.get();
     }
@@ -77,7 +78,7 @@ public class Cache<K, V> implements Map<K, V> {
     public V put(final K key, final V value) {
         // TODO: use queue?
         // TODO: should the cache entry not always be empty?
-        final WeakReference<V> prevRef = map.put(key, new WeakReference<V>(value));
+        final Reference<V> prevRef = map.put(key, new SoftReference<V>(value));
         if (prevRef == null) return null;
         return prevRef.get();
     }
