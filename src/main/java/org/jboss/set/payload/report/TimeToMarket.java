@@ -22,6 +22,7 @@
 package org.jboss.set.payload.report;
 
 import org.jboss.set.payload.report.container.Container;
+import org.jboss.set.payload.report.jira.JiraIssueHome;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -37,11 +38,15 @@ public class TimeToMarket {
     }
 
     public static void main(final String[] args) throws Exception {
-        final PayloadHome payloadHome = Container.get(AggregatePayloadHome.class);
-        final Payload payload = payloadHome.findByPrimaryKey(args[0]);
-        final Date releaseDate = payload.getReleaseDate().orElseThrow(() -> new IllegalStateException("Version " + payload + " has not been released yet"));
-        System.out.println(payload.getFixVersion() + ":");
-        report(payload.getIssues());
+        if (args.length == 0)
+            reportUnassigned();
+        else {
+            final PayloadHome payloadHome = Container.get(AggregatePayloadHome.class);
+            final Payload payload = payloadHome.findByPrimaryKey(args[0]);
+            //final Date releaseDate = payload.getReleaseDate().orElseThrow(() -> new IllegalStateException("Version " + payload + " has not been released yet"));
+            System.out.println(payload.getFixVersion() + ":");
+            report(payload.getIssues());
+        }
         System.exit(0);
     }
 
@@ -65,7 +70,7 @@ public class TimeToMarket {
                     }
                     final Optional<Date> releaseDate = payload.get().getReleaseDate();
                     if (!releaseDate.isPresent()) {
-                        System.err.println("Missing release date on + " + issue);
+                        System.err.println("Missing release date on " + issue);
                         return;
                     }
                     final long resolutionAge = resolutionDate.get().getTime() - creationDate.getTime();
@@ -83,6 +88,11 @@ public class TimeToMarket {
         System.out.println("Total issues: " + result.numIssues);
         System.out.println("Average resolution age: " + TimeUnit.MILLISECONDS.toDays(result.totalResolutionAge / result.numIssues));
         System.out.println("Average time to market: " + TimeUnit.MILLISECONDS.toDays(result.totalTimeToMarket / result.numIssues));
+    }
 
+    private static void reportUnassigned() {
+        final String jql = "project = JBEAP AND \"Target Release\" in (7.0.z.GA, 7.1.z.GA, 7.2.z.GA) AND assignee was EMPTY AND status in (Closed, Verified)";
+        final JiraIssueHome issueHome = Container.get(JiraIssueHome.class);
+        report(issueHome.findByJQL(jql));
     }
 }

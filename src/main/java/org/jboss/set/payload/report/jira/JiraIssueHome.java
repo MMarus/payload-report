@@ -51,11 +51,7 @@ public class JiraIssueHome extends AbstractEntityHome<String, JiraIssue> {
         return issue;
     }
 
-    public Collection<JiraIssue> findByPayload(final Payload payload) {
-        String jql = "project = JBEAP AND (fixVersion = " + payload.getFixVersion();
-        final String sprint = payload.getSprint();
-        if (sprint != null) jql += " OR Sprint = \"" + payload.getSprint() + "\"";
-        jql += ")";
+    public Collection<JiraIssue> findByJQL(final String jql) {
         // Note that the following fields: summary, issuetype, created, updated, project and status are required.
         // fixVersions, key and resolutiondate are needed for TimeToMarket
         // components and priority are mandated by Aphrodite
@@ -63,11 +59,19 @@ public class JiraIssueHome extends AbstractEntityHome<String, JiraIssue> {
         final Iterable<com.atlassian.jira.rest.client.api.domain.Issue> issues = jiraRestClient.getSearchClient().searchJql(jql, Integer.MAX_VALUE, null, fields).claim().getIssues();
         return StreamSupport.stream(issues.spliterator(), true)
                 .map(issue -> {
-                        final String key = issue.getKey();
-                        cache(key, () -> create(issue));
-                        return proxy(issue.getKey());
-                    })
+                    final String key = issue.getKey();
+                    cache(key, () -> create(issue));
+                    return proxy(issue.getKey());
+                })
                 .collect(Collectors.toList());
+    }
+
+    public Collection<JiraIssue> findByPayload(final Payload payload) {
+        String jql = "project = JBEAP AND (fixVersion = " + payload.getFixVersion();
+        final String sprint = payload.getSprint();
+        if (sprint != null) jql += " OR Sprint = \"" + payload.getSprint() + "\"";
+        jql += ")";
+        return findByJQL(jql);
     }
 
     @Override
