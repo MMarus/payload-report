@@ -23,8 +23,8 @@ package org.jboss.set.payload.report.bugzilla;
 
 import org.jboss.set.aphrodite.issue.trackers.bugzilla.BugzillaIssueTracker;
 import org.jboss.set.aphrodite.spi.NotFoundException;
-import org.jboss.set.payload.report.AbstractIssueHome;
 import org.jboss.set.payload.report.ObjectNotFoundException;
+import org.jboss.set.payload.report.container.AbstractEntityHome;
 import org.jboss.set.payload.report.container.Container;
 
 import java.net.URL;
@@ -32,7 +32,7 @@ import java.net.URL;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class BugzillaIssueHome extends AbstractIssueHome<URL, BugzillaIssue> {
+public class BugzillaIssueHome extends AbstractEntityHome<URL, BugzillaIssue> {
     private final static BugzillaIssueTracker BUGZILLA_ISSUE_TRACKER = Container.get(BugzillaIssueTracker.class);
 
     @Override

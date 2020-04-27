@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2016, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,27 +19,10 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.set.payload.report;
+package org.jboss.set.payload.report.container;
 
-import org.jboss.jbossset.bugclerk.Violation;
+import org.jboss.set.payload.report.ObjectNotFoundException;
 
-import java.net.URL;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-
-/**
- * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
- */
-public interface Issue {
-    Date getCreationDate();
-
-    List<URL> getDependsOn();
-
-    Optional<Payload> getPayload();
-
-    Optional<Date> getResolutionDate();
-
-    Collection<Violation> getViolations();
+public interface EntityHome<K, E> {
+    E findByPrimaryKey(K key) throws ObjectNotFoundException;
 }

@@ -25,8 +25,8 @@ import com.atlassian.httpclient.api.HttpClient;
 import com.atlassian.jira.rest.client.api.JiraRestClient;
 import com.atlassian.jira.rest.client.api.domain.Version;
 import org.jboss.set.payload.report.ObjectNotFoundException;
-import org.jboss.set.payload.report.Payload;
 import org.jboss.set.payload.report.PayloadHome;
+import org.jboss.set.payload.report.container.AbstractEntityHome;
 import org.jboss.set.payload.report.container.Container;
 import org.jboss.set.payload.report.jira.rest.client.api.domain.Page;
 import org.jboss.set.payload.report.jira.rest.client.api.domain.Sprint;
@@ -42,7 +42,7 @@ import static org.jboss.set.payload.report.util.Util.unchecked;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class JiraPayloadHome implements PayloadHome {
+public class JiraPayloadHome extends AbstractEntityHome<String, JiraPayload> implements PayloadHome {
     // TODO: get rid of the hard coded 3466
     private static final int EAP_7_SCRUM_DEV_BOARD_ID = 3466;
 
@@ -54,9 +54,12 @@ public class JiraPayloadHome implements PayloadHome {
     }
 
     @Override
-    public Payload findByPrimaryKey(final String arg) throws ObjectNotFoundException {
-        // TODO: cache
-        // TODO: match with pattern
+    protected Class<JiraPayload> getEntityClass() {
+        return JiraPayload.class;
+    }
+
+    @Override
+    protected JiraPayload load(String arg) throws ObjectNotFoundException {
         final String sprintName = "EAP " + arg.substring(0, arg.length() - 3); // strip .GA
         final Page<Sprint> page = agileRestClient.getAllSprints(EAP_7_SCRUM_DEV_BOARD_ID, null, null, null).claim();
         final Sprint sprint = StreamSupport.stream(page.getValues().spliterator(), false).filter(s -> s.getName().equals(sprintName)).findAny().orElse(null);

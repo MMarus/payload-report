@@ -23,6 +23,7 @@ package org.jboss.set.payload.report.bugzilla;
 
 import org.jboss.jbossset.bugclerk.Violation;
 import org.jboss.set.aphrodite.domain.Issue;
+import org.jboss.set.payload.report.Payload;
 import org.jboss.set.payload.report.ViolationHome;
 
 import java.net.URL;
@@ -61,6 +62,11 @@ public class BugzillaIssue implements org.jboss.set.payload.report.Issue {
     @Override
     public List<URL> getDependsOn() {
         return issue.getDependsOn();
+    }
+
+    @Override
+    public Optional<Payload> getPayload() {
+        throw new IllegalStateException("NYI");
     }
 
     @Override

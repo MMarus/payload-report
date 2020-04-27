@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source.
- * Copyright (c) 2016, Red Hat, Inc., and individual contributors
+ * Copyright (c) 2020, Red Hat, Inc., and individual contributors
  * as indicated by the @author tags. See the copyright.txt file in the
  * distribution for a full listing of individual contributors.
  *
@@ -19,14 +19,14 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.jboss.set.payload.report;
+package org.jboss.set.payload.report.container;
 
 import org.jboss.invocation.Interceptor;
 import org.jboss.invocation.InterceptorInvocationHandler;
 import org.jboss.invocation.Interceptors;
 import org.jboss.invocation.proxy.ProxyConfiguration;
 import org.jboss.invocation.proxy.ProxyFactory;
-import org.jboss.set.payload.report.container.Cache;
+import org.jboss.set.payload.report.ObjectNotFoundException;
 import org.jboss.set.payload.report.entity.InstanceLoadInterceptor;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,11 +34,8 @@ import java.util.function.Supplier;
 
 import static org.jboss.set.payload.report.util.Util.unchecked;
 
-/**
- * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
- */
-public abstract class AbstractIssueHome<K, E extends Issue> implements IssueHome<K> {
-    private final Cache<K, Issue> cache = new Cache<>();
+public abstract class AbstractEntityHome<K, E> implements EntityHome<K, E> {
+    private final Cache<K, E> cache = new Cache<>();
     private final AtomicInteger proxyNum = new AtomicInteger(0);
 
     protected void cache(final K key, final Supplier<E> supplier) {
@@ -53,9 +50,9 @@ public abstract class AbstractIssueHome<K, E extends Issue> implements IssueHome
      * @param key primary key
      * @return a cached instance
      */
-    private Issue cached(final K key) throws ObjectNotFoundException {
+    private E cached(final K key) throws ObjectNotFoundException {
         synchronized (cache) {
-            Issue issue = cache.get(key);
+            E issue = cache.get(key);
             if (issue == null) {
                 issue = load(key);
                 cache.put(key, issue);
@@ -65,7 +62,7 @@ public abstract class AbstractIssueHome<K, E extends Issue> implements IssueHome
     }
 
     @Override
-    public Issue findByPrimaryKey(final K primaryKey) throws ObjectNotFoundException {
+    public final E findByPrimaryKey(final K primaryKey) throws ObjectNotFoundException {
         cached(primaryKey); // preload to check
         return proxy(primaryKey);
     }
@@ -75,10 +72,11 @@ public abstract class AbstractIssueHome<K, E extends Issue> implements IssueHome
     protected abstract E load(final K primaryKey) throws ObjectNotFoundException;
 
     protected E proxy(final K primaryKey) {
+        final Class<E> clz = getEntityClass();
         final ProxyConfiguration<E> proxyConfiguration = new ProxyConfiguration<E>()
-                .setClassLoader(IssueHome.class.getClassLoader())
-                .setProxyName(Issue.class.getPackage(), "Issue$Proxy" + proxyNum.getAndIncrement())
-                .setSuperClass(getEntityClass());
+                .setClassLoader(clz.getClassLoader())
+                .setProxyName(clz.getPackage(), clz.getSimpleName() + "$Proxy" + proxyNum.getAndIncrement())
+                .setSuperClass(clz);
         final ProxyFactory<E> proxyFactory = new ProxyFactory<E>(proxyConfiguration);
         final Interceptor interceptor = Interceptors.getChainedInterceptor(
                 new InstanceLoadInterceptor<>(primaryKey, (key) -> {

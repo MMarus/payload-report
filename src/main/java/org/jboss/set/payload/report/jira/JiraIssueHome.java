@@ -23,8 +23,8 @@ package org.jboss.set.payload.report.jira;
 
 import com.atlassian.jira.rest.client.api.JiraRestClient;
 import org.jboss.set.aphrodite.issue.trackers.jira.JiraIssueHelper;
-import org.jboss.set.payload.report.AbstractIssueHome;
 import org.jboss.set.payload.report.Payload;
+import org.jboss.set.payload.report.container.AbstractEntityHome;
 import org.jboss.set.payload.report.container.Container;
 
 import java.net.URL;
@@ -40,7 +40,7 @@ import static org.jboss.set.payload.report.util.Util.unchecked;
 /**
  * @author <a href="mailto:cdewolf@redhat.com">Carlo de Wolf</a>
  */
-public class JiraIssueHome extends AbstractIssueHome<String, JiraIssue> {
+public class JiraIssueHome extends AbstractEntityHome<String, JiraIssue> {
     private final JiraRestClient jiraRestClient = Container.getJiraRestClient();
 
     private JiraIssue create(final com.atlassian.jira.rest.client.api.domain.Issue jiraIssue) {
@@ -57,9 +57,9 @@ public class JiraIssueHome extends AbstractIssueHome<String, JiraIssue> {
         if (sprint != null) jql += " OR Sprint = \"" + payload.getSprint() + "\"";
         jql += ")";
         // Note that the following fields: summary, issuetype, created, updated, project and status are required.
-        // key and resolutiondate are needed for TimeToMarket
+        // fixVersions, key and resolutiondate are needed for TimeToMarket
         // components and priority are mandated by Aphrodite
-        final Set<String> fields = new HashSet<>(Arrays.asList("summary", "issuetype", "created", "updated", "project", "status", "key", "resolutiondate", "components", "priority"));
+        final Set<String> fields = new HashSet<>(Arrays.asList("summary", "issuetype", "created", "updated", "project", "status", "fixVersions", "key", "resolutiondate", "components", "priority"));
         final Iterable<com.atlassian.jira.rest.client.api.domain.Issue> issues = jiraRestClient.getSearchClient().searchJql(jql, Integer.MAX_VALUE, null, fields).claim().getIssues();
         return StreamSupport.stream(issues.spliterator(), true)
                 .map(issue -> {

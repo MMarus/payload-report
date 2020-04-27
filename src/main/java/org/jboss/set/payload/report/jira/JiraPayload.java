@@ -40,6 +40,12 @@ public class JiraPayload implements Payload {
     private final Version version;
     private final String sprint;
 
+    // For proxy only
+    public JiraPayload() {
+        version = null;
+        sprint = null;
+    }
+
     JiraPayload(final Version version, final String sprint) {
         this.version = version;
         this.sprint = sprint;

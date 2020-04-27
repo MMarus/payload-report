@@ -21,16 +21,22 @@
  */
 package org.jboss.set.payload.report.jira;
 
+import com.atlassian.jira.rest.client.api.domain.Version;
 import org.jboss.jbossset.bugclerk.Violation;
 import org.jboss.set.payload.report.Issue;
+import org.jboss.set.payload.report.ObjectNotFoundException;
+import org.jboss.set.payload.report.Payload;
+import org.jboss.set.payload.report.PayloadHome;
 import org.jboss.set.payload.report.Signal;
 import org.jboss.set.payload.report.ViolationHome;
+import org.jboss.set.payload.report.container.Container;
 import org.joda.time.DateTime;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -42,8 +48,10 @@ import static org.jboss.set.payload.report.util.Lazy.lazy;
  */
 public class JiraIssue extends org.jboss.set.aphrodite.issue.trackers.jira.JiraIssue implements Issue {
     private static final URL DUMMY_URL;
+    private final PayloadHome payloadHome = Container.get(JiraPayloadHome.class);
 
     private final com.atlassian.jira.rest.client.api.domain.Issue delegate;
+    private Optional<Payload> payload;
     private Optional<Date> resolutionDate;
 
     static {
@@ -74,6 +82,17 @@ public class JiraIssue extends org.jboss.set.aphrodite.issue.trackers.jira.JiraI
 //        super(url);
 //    }
 
+    private String findPayloadFixVersion() {
+        final Iterator<Version> fixVersions = delegate.getFixVersions().iterator();
+        while (fixVersions.hasNext()) {
+            final Version version = fixVersions.next();
+            final String name = version.getName();
+            if (name.endsWith(".GA") && !name.contains(".z"))
+                return name;
+        }
+        return null;
+    }
+
     @Override
     public Date getCreationDate() {
         return super.getCreationTime().orElseThrow(() -> new IllegalStateException("No creation date on " + this));
@@ -81,6 +100,23 @@ public class JiraIssue extends org.jboss.set.aphrodite.issue.trackers.jira.JiraI
 
     public String getReport() {
         throw new RuntimeException("NYI: org.jboss.set.payload.report.jira.Issue.getReport");
+    }
+
+    @Override
+    public Optional<Payload> getPayload() {
+        if (payload == null) {
+            final String fixVersion = findPayloadFixVersion();
+            if (fixVersion != null) {
+                try {
+                    payload = Optional.of(payloadHome.findByPrimaryKey(fixVersion));
+                } catch (ObjectNotFoundException e) {
+                    payload = Optional.empty();
+                }
+            } else {
+                payload = Optional.empty();
+            }
+        }
+        return payload;
     }
 
     @Override
